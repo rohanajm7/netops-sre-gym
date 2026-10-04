@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.venv/
+build/
+dist/
+
+# Go
+daemon/bin/
+
+# Notebooks and training output
+.ipynb_checkpoints/
+outputs/
+checkpoints/
+wandb/
+
+# Secrets and local config
+.env
+.env.*
+
+# OS
+.DS_Store
