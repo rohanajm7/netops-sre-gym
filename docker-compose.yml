@@ -1,0 +1,41 @@
+services:
+  sandbox:
+    build:
+      context: .
+      dockerfile: docker/sandbox.Dockerfile
+      target: sandbox
+    # Network namespaces, veth pairs and iptables need NET_ADMIN and SYS_ADMIN.
+    privileged: true
+    ports:
+      - "127.0.0.1:8700:8700"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8700/healthz"]
+      interval: 2s
+      timeout: 2s
+      retries: 15
+
+  env:
+    build:
+      context: .
+      dockerfile: docker/env.Dockerfile
+    environment:
+      DAEMON_URL: http://sandbox:8700
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - .:/app
+    command: uvicorn env.server.app:app --host 0.0.0.0 --port 8000 --reload
+    depends_on:
+      sandbox:
+        condition: service_healthy
+
+  # Go toolchain plus the networking tools, for `make test` and `make lint`.
+  daemon-dev:
+    profiles: ["dev"]
+    build:
+      context: .
+      dockerfile: docker/sandbox.Dockerfile
+      target: dev
+    privileged: true
+    volumes:
+      - ./daemon:/src/daemon
